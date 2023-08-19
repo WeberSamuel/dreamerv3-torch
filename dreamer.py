@@ -3,19 +3,11 @@ import functools
 import os
 import pathlib
 import sys
-
-os.environ["MUJOCO_GL"] = "osmesa"
-
 import numpy as np
-import ruamel.yaml as yaml
 
-sys.path.append(str(pathlib.Path(__file__).parent))
-
-import exploration as expl
-import models
-import tools
-import envs.wrappers as wrappers
-from parallel import Parallel, Damy
+from . import exploration as expl, models, tools
+from .envs import wrappers
+from .parallel import Parallel, Damy
 
 import torch
 from torch import nn
@@ -371,6 +363,7 @@ def main(config):
 
 
 if __name__ == "__main__":
+    import yaml
     parser = argparse.ArgumentParser()
     parser.add_argument("--configs", nargs="+")
     args, remaining = parser.parse_known_args()
