@@ -35,7 +35,7 @@ class WorldModel(nn.Module):
         self._config = config
         shapes = {k: tuple(v.shape) for k, v in obs_space.spaces.items()}
         self.encoder = networks.MultiEncoder(shapes, **config.encoder)
-        self.embed_size = self.encoder.outdim
+        self.embed_size = self.encoder.outdim            
         self.dynamics = networks.RSSM(
             config.dyn_stoch,
             config.dyn_deter,
@@ -63,6 +63,16 @@ class WorldModel(nn.Module):
             feat_size = config.dyn_stoch * config.dyn_discrete + config.dyn_deter
         else:
             feat_size = config.dyn_stoch + config.dyn_deter
+        # self.heads["task"] = networks.MLP(
+        #     feat_size,
+        #     (255,),
+        #     config.task_layers,
+        #     config.units,
+        #     config.act,
+        #     config.norm,
+        #     dist=config.task_head,
+        #     device=config.device,
+        # )
         self.heads["decoder"] = networks.MultiDecoder(
             feat_size, shapes, **config.decoder
         )
