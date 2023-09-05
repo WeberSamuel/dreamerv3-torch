@@ -3,6 +3,7 @@ import functools
 import os
 import pathlib
 import sys
+from typing import Iterator
 import numpy as np
 
 from . import exploration as expl, models, tools
@@ -18,10 +19,11 @@ to_np = lambda x: x.detach().cpu().numpy()
 
 
 class Dreamer(nn.Module):
-    def __init__(self, obs_space, act_space, config, logger, dataset):
+    _dataset: Iterator
+    def __init__(self, obs_space, act_space, config):
         super(Dreamer, self).__init__()
         self._config = config
-        self._logger = logger
+        self._step = 0
         self._should_log = tools.Every(config.log_every)
         batch_steps = config.batch_size * config.batch_length
         self._should_train = tools.Every(batch_steps / config.train_ratio)
@@ -30,7 +32,6 @@ class Dreamer(nn.Module):
         self._should_expl = tools.Until(int(config.expl_until / config.action_repeat))
         self._metrics = {}
         # this is update step
-        self._step = logger.step // config.action_repeat
         self._update_count = 0
         # Schedules.
         config.actor_entropy = lambda x=config.actor_entropy: tools.schedule(
@@ -42,7 +43,6 @@ class Dreamer(nn.Module):
         config.imag_gradient_mix = lambda x=config.imag_gradient_mix: tools.schedule(
             x, self._step
         )
-        self._dataset = dataset
         self._wm = models.WorldModel(obs_space, act_space, self._step, config)
         self._task_behavior = models.ImagBehavior(
             config, self._wm, config.behavior_stop_grad
@@ -154,7 +154,7 @@ class Dreamer(nn.Module):
         ).mode()
         metrics.update(self._task_behavior._train(start, reward)[-1])
         if self._config.expl_behavior != "greedy":
-            mets = self._expl_behavior.train(start, context, data)[-1]
+            mets = self._expl_behavior._train(start, context, data)[-1]
             metrics.update({"expl_" + key: value for key, value in mets.items()})
         for name, value in metrics.items():
             if not name in self._metrics.keys():

@@ -31,7 +31,7 @@ class Random(nn.Module):
                 1,
             )
 
-    def train(self, start, context, data):
+    def _train(self, start, context, data):
         return None, {}
 
 
@@ -77,7 +77,7 @@ class Plan2Explore(nn.Module):
             **kw
         )
 
-    def train(self, start, context, data):
+    def _train(self, start, context, data):
         with tools.RequiresGrad(self._networks):
             metrics = {}
             stoch = start["stoch"]

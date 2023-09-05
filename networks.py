@@ -346,11 +346,10 @@ class MultiEncoder(nn.Module):
         symlog_inputs,
     ):
         super(MultiEncoder, self).__init__()
-        excluded = ("is_first", "is_last", "is_terminal", "reward")
         shapes = {
             k: v
             for k, v in shapes.items()
-            if k not in excluded and not k.startswith("log_")
+            if not k.startswith("log_")
         }
         self.cnn_shapes = {
             k: v for k, v in shapes.items() if len(v) == 3 and re.match(cnn_keys, k)
